@@ -1,0 +1,50 @@
+/* Palco — tokens e classes compartilhadas pelas estações (1600×900). Fontes locais: funciona sem internet. */
+@font-face{font-family:"Montserrat";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/montserrat-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Montserrat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/montserrat-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Montserrat";font-style:normal;font-weight:600;font-display:swap;src:url(fonts/montserrat-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Montserrat";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/montserrat-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Montserrat";font-style:normal;font-weight:800;font-display:swap;src:url(fonts/montserrat-latin-800-normal.woff2) format("woff2")}
+@font-face{font-family:"Montserrat";font-style:normal;font-weight:900;font-display:swap;src:url(fonts/montserrat-latin-900-normal.woff2) format("woff2")}
+@font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Caveat";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/caveat-latin-700-normal.woff2) format("woff2")}
+
+:root{
+  --red:#e3001b; --red-deep:#c41029; --on-red:#ffffff;
+  --ink:#333333; --text:#4a4a4a; --muted:#6e6e6e; --line:#dedcdd; --gray:#ebeaeb; --soft:#f9f8f8; --white:#ffffff;
+  --stage:#15161a; --stage-2:#1d1f25; --stage-muted:#b8b8bc;
+  --claude:#d97757; --claude-deep:#c15f3c; --claude-light:#eebfa6;
+  --font:"Montserrat",Arial,Helvetica,sans-serif; --mono:Menlo,Consolas,"Courier New",monospace;
+  --shadow:0 6px 24px rgba(0,0,0,.06);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){color-scheme:dark}}
+:root[data-theme="dark"]{color-scheme:dark}
+
+.st{position:absolute;left:0;top:0;width:1600px;height:900px;overflow:hidden;font-family:var(--font);color:var(--text);
+  box-sizing:border-box;padding:110px 96px 90px;border-radius:28px}
+.st *,.st *::before,.st *::after{box-sizing:border-box}
+.st p,.st h1,.st h2,.st h3{margin:0}
+.st.light{background:var(--soft)}
+.st.dark{background:var(--stage);color:#fff}
+.st.red{background:var(--red);color:#fff}
+.st .logo{position:absolute;left:96px;top:40px;height:44px}
+.st .eyebrow{font-size:22px;font-weight:700;letter-spacing:6px;text-transform:uppercase;color:var(--text);border-left:4px solid var(--red);padding-left:16px}
+.st.dark .eyebrow,.st.red .eyebrow{color:#fff}
+.st .ttl{font-size:64px;font-weight:800;line-height:1.05;color:var(--ink);margin-top:14px}
+.st .ttl em{font-style:normal;color:var(--red)}
+.st.dark .ttl{color:#fff}.st.red .ttl,.st.red .ttl em{color:#fff}
+.st .lead{font-size:32px;line-height:1.35;color:var(--text)}
+.st.dark .lead{color:var(--stage-muted)}
+.st .card{background:var(--white);border:2px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:28px}
+.st.dark .card{background:var(--stage-2);border-color:#33353d;box-shadow:none}
+.st .chip{display:inline-block;font-size:22px;font-weight:700;color:var(--ink);background:var(--white);border:2px solid var(--line);border-radius:999px;padding:6px 18px}
+.st .pill-red{display:inline-block;font-size:22px;font-weight:700;letter-spacing:2px;color:#fff;background:var(--red);border-radius:8px;padding:6px 16px}
+.st .btn-demo{display:inline-flex;align-items:center;gap:12px;font:700 24px var(--font);color:#fff;background:var(--red);border:0;border-radius:999px;padding:14px 28px;cursor:pointer}
+.st .btn-demo:focus-visible{outline:3px solid #ffd45e;outline-offset:3px}
+.st .grid2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.st .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.st .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.st .muted{color:var(--muted)} .st .red{color:var(--red)} .st .ink{color:var(--ink)}
+.st .foot{position:absolute;left:96px;bottom:36px;font-size:20px;font-weight:500;color:var(--muted)}
+.st.dark .foot{color:var(--stage-muted)}
+.st .deco{position:absolute;right:0;bottom:0;width:300px;height:340px;background:var(--red-deep);border-radius:300px 0 0 0;pointer-events:none}
+@media (prefers-reduced-motion:reduce){.st *{animation-duration:0s!important;transition-duration:0s!important}}

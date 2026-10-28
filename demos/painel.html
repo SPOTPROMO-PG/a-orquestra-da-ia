@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<body>
+<title>Painel de Pendências</title>
+<meta name="claude:viewport-fit-sides">
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;800;900&display=swap">
+<style>
+/* Layout: cabeçalho vermelho SPOT, quatro números, dois resumos lado a lado, tabela filtrável. */
+:root{
+  --bg:#f9f8f8; --card:#ffffff; --ink:#333333; --text:#4a4a4a; --muted:#6e6e6e; --line:#dedcdd;
+  --red:#e3001b; --on-red:#ffffff; --soft:#ebeaeb;
+  --late:#c41029; --late-bg:#fbe5e8;
+  --today:#8a5a00; --today-bg:#fff1c9;
+  --ok:#1b6e3c; --ok-bg:#dff3e5;
+  --done:#6e6e6e; --done-bg:#ebeaeb;
+  --font:"Montserrat",Arial,system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#15161a; --card:#202228; --ink:#f3f3f4; --text:#d6d6da; --muted:#9a9aa2; --line:#33353d;
+  --red:#ff3b52; --soft:#2a2c34;
+  --late:#ff8a98; --late-bg:#3d1820;
+  --today:#ffd45e; --today-bg:#3a2f10;
+  --ok:#7fdc9f; --ok-bg:#16301f;
+  --done:#9a9aa2; --done-bg:#2a2c34; color-scheme:dark;}}
+:root[data-theme="dark"]{--bg:#15161a; --card:#202228; --ink:#f3f3f4; --text:#d6d6da; --muted:#9a9aa2; --line:#33353d; --red:#ff3b52; --soft:#2a2c34; --late:#ff8a98; --late-bg:#3d1820; --today:#ffd45e; --today-bg:#3a2f10; --ok:#7fdc9f; --ok-bg:#16301f; --done:#9a9aa2; --done-bg:#2a2c34; color-scheme:dark}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--text);font:400 15px/1.5 var(--font);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto;padding-block:0 48px}
+header{background:var(--red);color:var(--on-red);margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));
+  padding:22px max(16px,env(safe-area-inset-left,0px));}
+header .in{max-width:1180px;margin:0 auto;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+header h1{margin:0;font:900 26px/1.1 var(--font);letter-spacing:-.01em}
+header p{margin:4px 0 0;font-weight:500;opacity:.92}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{font:700 14px var(--font);border:2px solid #fff;background:#fff;color:#e3001b;border-radius:10px;padding:9px 14px;cursor:pointer}
+.btn.ghost{background:transparent;color:#fff}
+.btn:focus-visible,select:focus-visible,input:focus-visible,.chip:focus-visible{outline:3px solid #ffd45e;outline-offset:2px}
+label.f{font:700 13px var(--font);display:flex;gap:8px;align-items:center}
+input[type=date],select{font:500 14px var(--font);border-radius:8px;border:2px solid var(--line);padding:7px 10px;background:var(--card);color:var(--ink)}
+header input[type=date]{border-color:#fff}
+#aviso{margin:18px 0 0;display:none;border:2px solid var(--late);background:var(--late-bg);color:var(--late);border-radius:12px;padding:12px 16px;font-weight:600}
+#aviso.show{display:block}
+#aviso ul{margin:6px 0 0 18px;padding:0;font-weight:500}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:22px}
+.kpi{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:18px 20px;min-width:0}
+.kpi b{display:block;font:900 46px/1 var(--font);font-variant-numeric:tabular-nums}
+.kpi span{display:block;margin-top:6px;font:700 13px var(--font);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.kpi.late{background:var(--late-bg);border-color:var(--late)} .kpi.late b,.kpi.late span{color:var(--late)}
+.kpi.today{background:var(--today-bg);border-color:var(--today)} .kpi.today b,.kpi.today span{color:var(--today)}
+.kpi.ok{background:var(--ok-bg);border-color:var(--ok)} .kpi.ok b,.kpi.ok span{color:var(--ok)}
+.kpi.done{background:var(--done-bg);border-color:var(--line)} .kpi.done b,.kpi.done span{color:var(--done)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:18px 20px;min-width:0}
+.panel h2{margin:0 0 12px;font:800 15px var(--font);color:var(--ink)}
+.bar{display:grid;grid-template-columns:130px 1fr 34px;gap:10px;align-items:center;margin:8px 0;font-weight:600}
+.bar .track{background:var(--soft);border-radius:999px;height:12px;overflow:hidden}
+.bar .fill{height:100%;background:var(--red);border-radius:999px}
+.bar .n{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink);font-weight:800}
+.bar .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:22px 0 10px}
+.chip{font:700 13px var(--font);border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 14px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tablewrap{overflow-x:auto;background:var(--card);border:2px solid var(--line);border-radius:14px}
+table{border-collapse:collapse;width:100%;min-width:760px}
+th{background:#333;color:#fff;text-align:left;font:700 13px var(--font);letter-spacing:.06em;text-transform:uppercase;padding:12px 14px}
+td{padding:11px 14px;border-top:1px solid var(--line);color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
+td.num{text-align:right} th.num{text-align:right}
+.pill{display:inline-block;font:800 12px var(--font);letter-spacing:.04em;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.pill.Atrasada{background:var(--late-bg);color:var(--late);border:1.5px solid var(--late)}
+.pill.Hoje{background:var(--today-bg);color:var(--today);border:1.5px solid var(--today)}
+.pill.NoPrazo{background:var(--ok-bg);color:var(--ok);border:1.5px solid var(--ok)}
+.pill.Resolvida{background:var(--done-bg);color:var(--done);border:1.5px solid var(--line)}
+.flag{display:inline-block;margin-left:8px;font:800 11px var(--font);background:var(--red);color:#fff;border-radius:6px;padding:2px 7px;letter-spacing:.04em}
+.empty{padding:28px;text-align:center;color:var(--muted);font-weight:600}
+footer{margin-top:18px;color:var(--muted);font-size:13px}
+@media (max-width:820px){.kpis{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}.bar{grid-template-columns:100px 1fr 30px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<header>
+  <div class="in">
+    <div>
+      <h1>Painel de Pendências do BKO</h1>
+      <p id="fonte">Escolha uma base em CSV ou use a base de exemplo.</p>
+    </div>
+    <div class="tools">
+      <label class="f" for="ref">Data de referência <input id="ref" type="date"></label>
+      <button class="btn" id="btnCsv" type="button">Carregar base (.csv)</button>
+      <button class="btn ghost" id="btnEx" type="button">Usar base de exemplo</button>
+      <input id="arquivo" type="file" accept=".csv,text/csv,text/plain" hidden>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="aviso" role="status"></div>
+
+  <section class="kpis" aria-label="Resumo">
+    <div class="kpi late"><b id="k-atrasada">0</b><span>Atrasadas</span></div>
+    <div class="kpi today"><b id="k-hoje">0</b><span>Vencem hoje</span></div>
+    <div class="kpi ok"><b id="k-noprazo">0</b><span>No prazo</span></div>
+    <div class="kpi done"><b id="k-resolvida">0</b><span>Resolvidas</span></div>
+  </section>
+
+  <section class="two">
+    <div class="panel"><h2>Abertas por área</h2><div id="porArea"></div></div>
+    <div class="panel"><h2>Abertas por coordenador</h2><div id="porCoord"></div></div>
+  </section>
+
+  <div class="filters">
+    <span id="chips" role="group" aria-label="Filtrar por área" style="display:flex;gap:8px;flex-wrap:wrap"></span>
+    <label class="f" for="selCoord" style="color:var(--ink)">Coordenador <select id="selCoord"><option value="">Todos</option></select></label>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr>
+        <th>Promotor</th><th>Pendência</th><th>Área</th><th>Coordenador</th><th class="num">Prazo</th><th class="num">Dias</th><th>Situação</th>
+      </tr></thead>
+      <tbody id="corpo"></tbody>
+    </table>
+  </div>
+  <footer>Dados fictícios. Colunas do CSV: promotor; pendencia; area; coordenador; prazo; status.</footer>
+</div>
+
+<script>
+(function(){
+  var AREAS=["Admissão","Equipamentos","Ponto","Ajuda de custo"];
+  var ORDEM={"Atrasada":0,"Vence hoje":1,"No prazo":2,"Resolvida":3};
+  var CLS={"Atrasada":"Atrasada","Vence hoje":"Hoje","No prazo":"NoPrazo","Resolvida":"Resolvida"};
+  var linhas=[], areaSel="", coordSel="";
+  var $=function(id){return document.getElementById(id)};
+
+  function pad(n){return (n<10?"0":"")+n}
+  function iso(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+  function br(d){return pad(d.getDate())+"/"+pad(d.getMonth()+1)+"/"+d.getFullYear()}
+  function hojeLocal(){var n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate())}
+  function addDias(d,n){return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n)}
+  function parseData(s){
+    s=(s||"").trim(); var m;
+    if((m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s))) return mk(+m[1],+m[2],+m[3]);
+    if((m=/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s))) return mk(+m[3],+m[2],+m[1]);
+    return null;
+  }
+  function mk(y,mo,d){var dt=new Date(y,mo-1,d); return (dt.getFullYear()===y&&dt.getMonth()===mo-1&&dt.getDate()===d)?dt:null}
+  function norm(s){return (s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").trim().toLowerCase()}
+  function semAcento(s){return norm(s)}
+
+  // --- CSV
+  function parseCSV(texto){
+    texto=texto.replace(/^﻿/,"");
+    var primeira=texto.split(/\r?\n/)[0]||"";
+    var delim=(primeira.split(";").length>=primeira.split(",").length)?";":",";
+    var rows=[],row=[],cur="",q=false;
+    for(var i=0;i<texto.length;i++){
+      var c=texto[i];
+      if(q){ if(c==='"'){ if(texto[i+1]==='"'){cur+='"';i++} else q=false } else cur+=c }
+      else if(c==='"') q=true;
+      else if(c===delim){row.push(cur);cur=""}
+      else if(c==="\n"){row.push(cur);rows.push(row);row=[];cur=""}
+      else if(c!=="\r") cur+=c;
+    }
+    if(cur!==""||row.length){row.push(cur);rows.push(row)}
+    return rows.filter(function(r){return r.some(function(x){return x.trim()!==""})});
+  }
+  function lerBase(texto){
+    var rows=parseCSV(texto), erros=[], itens=[];
+    if(!rows.length) return {itens:[],erros:["O arquivo está vazio."]};
+    var head=rows[0].map(norm), idx={};
+    ["promotor","pendencia","area","coordenador","prazo","status"].forEach(function(k){idx[k]=head.indexOf(k)});
+    var falta=Object.keys(idx).filter(function(k){return idx[k]<0});
+    if(falta.length) return {itens:[],erros:["Faltam colunas: "+falta.join(", ")+". Use: promotor; pendencia; area; coordenador; prazo; status."]};
+    for(var i=1;i<rows.length;i++){
+      var r=rows[i], n=i+1;
+      var prazo=parseData(r[idx.prazo]);
+      var st=norm(r[idx.status]);
+      if(!prazo){erros.push("Linha "+n+": prazo vazio ou inválido ("+(r[idx.prazo]||"vazio")+").");continue}
+      if(st!=="aberta"&&st!=="resolvida"){erros.push("Linha "+n+": status deve ser Aberta ou Resolvida ("+(r[idx.status]||"vazio")+").");continue}
+      var areaTxt=(r[idx.area]||"").trim();
+      var area=AREAS.filter(function(a){return norm(a)===norm(areaTxt)})[0]||areaTxt||"Sem área";
+      itens.push({promotor:(r[idx.promotor]||"").trim(),pendencia:(r[idx.pendencia]||"").trim(),area:area,
+        coordenador:(r[idx.coordenador]||"").trim()||"Sem coordenador",prazo:prazo,resolvida:st==="resolvida"});
+    }
+    return {itens:itens,erros:erros};
+  }
+
+  // --- regras
+  function classificar(item,ref){
+    var dias=Math.round((item.prazo-ref)/864e5), sit;
+    if(item.resolvida) sit="Resolvida";
+    else if(dias<0) sit="Atrasada";
+    else if(dias===0) sit="Vence hoje";
+    else sit="No prazo";
+    return {dias:dias,sit:sit};
+  }
+  function ordenar(a,b){
+    if(ORDEM[a.sit]!==ORDEM[b.sit]) return ORDEM[a.sit]-ORDEM[b.sit];
+    return a.item.prazo-b.item.prazo;
+  }
+
+  // --- base de exemplo (datas relativas à data de referência)
+  var EXEMPLO=[
+    ["Promotor A","Documento de admissão","Admissão","Coord. 1",-3,"Aberta"],
+    ["Promotor B","Exame admissional","Admissão","Coord. 2",-1,"Aberta"],
+    ["Promotor C","Celular não retirado","Equipamentos","Coord. 1",0,"Aberta"],
+    ["Promotor D","Ponto sem justificativa","Ponto","Coord. 3",-2,"Aberta"],
+    ["Promotor E","Ajuda de custo não conferida","Ajuda de custo","Coord. 2",2,"Aberta"],
+    ["Promotor F","Uniforme não retirado","Equipamentos","Coord. 3",5,"Aberta"],
+    ["Promotor G","Documento de admissão","Admissão","Coord. 2",1,"Aberta"],
+    ["Promotor H","Ponto sem justificativa","Ponto","Coord. 1",0,"Aberta"],
+    ["Promotor A","Ponto sem justificativa","Ponto","Coord. 1",-5,"Aberta"],
+    ["Promotor A","Uniforme não retirado","Equipamentos","Coord. 1",3,"Aberta"],
+    ["Promotor I","Ajuda de custo não conferida","Ajuda de custo","Coord. 3",-4,"Aberta"],
+    ["Promotor J","Celular não retirado","Equipamentos","Coord. 2",7,"Aberta"],
+    ["Promotor K","Documento de admissão","Admissão","Coord. 3",4,"Resolvida"],
+    ["Promotor L","Ponto sem justificativa","Ponto","Coord. 2",-2,"Resolvida"],
+    ["Promotor B","Ajuda de custo não conferida","Ajuda de custo","Coord. 2",6,"Aberta"],
+    ["Promotor M","Exame admissional","Admissão","Coord. 1",0,"Aberta"]
+  ];
+  function exemploItens(ref){
+    return EXEMPLO.map(function(e){return {promotor:e[0],pendencia:e[1],area:e[2],coordenador:e[3],prazo:addDias(ref,e[4]),resolvida:e[5]==="Resolvida"}});
+  }
+  function csvExemplo(ref){
+    var out=["promotor;pendencia;area;coordenador;prazo;status"];
+    exemploItens(ref).forEach(function(i,k){out.push([i.promotor,i.pendencia,i.area,i.coordenador,iso(i.prazo),EXEMPLO[k][5]].join(";"))});
+    return out.join("\n")+"\n";
+  }
+
+  // --- tela
+  function refData(){return parseData($("ref").value)||hojeLocal()}
+  function aviso(lista){
+    var a=$("aviso");
+    if(!lista.length){a.className="";a.innerHTML="";return}
+    a.className="show"; a.textContent="";
+    var t=document.createElement("div"); t.textContent=lista.length+" linha(s) ficaram de fora da conta:"; a.appendChild(t);
+    var ul=document.createElement("ul");
+    lista.slice(0,8).forEach(function(m){var li=document.createElement("li");li.textContent=m;ul.appendChild(li)});
+    if(lista.length>8){var li=document.createElement("li");li.textContent="e mais "+(lista.length-8)+".";ul.appendChild(li)}
+    a.appendChild(ul);
+  }
+  function barras(el,mapa,chaves){
+    el.textContent="";
+    var max=Math.max.apply(null,chaves.map(function(k){return mapa[k]||0}).concat([1]));
+    if(!chaves.length){var e=document.createElement("div");e.className="empty";e.textContent="Sem pendências abertas.";el.appendChild(e);return}
+    chaves.forEach(function(k){
+      var d=document.createElement("div");d.className="bar";
+      var nm=document.createElement("span");nm.className="name";nm.textContent=k;nm.title=k;
+      var tr=document.createElement("span");tr.className="track";
+      var f=document.createElement("span");f.className="fill";f.style.display="block";f.style.width=((mapa[k]||0)/max*100)+"%";tr.appendChild(f);
+      var n=document.createElement("span");n.className="n";n.textContent=mapa[k]||0;
+      d.appendChild(nm);d.appendChild(tr);d.appendChild(n);el.appendChild(d);
+    });
+  }
+  function desenhar(){
+    var ref=refData();
+    var cls=linhas.map(function(item){var c=classificar(item,ref);return {item:item,dias:c.dias,sit:c.sit}});
+    var cont={"Atrasada":0,"Vence hoje":0,"No prazo":0,"Resolvida":0};
+    cls.forEach(function(c){cont[c.sit]++});
+    $("k-atrasada").textContent=cont["Atrasada"]; $("k-hoje").textContent=cont["Vence hoje"];
+    $("k-noprazo").textContent=cont["No prazo"]; $("k-resolvida").textContent=cont["Resolvida"];
+
+    var abertas=cls.filter(function(c){return c.sit!=="Resolvida"});
+    var pa={},pc={},pp={};
+    abertas.forEach(function(c){pa[c.item.area]=(pa[c.item.area]||0)+1;pc[c.item.coordenador]=(pc[c.item.coordenador]||0)+1;pp[c.item.promotor]=(pp[c.item.promotor]||0)+1});
+    var chavesArea=AREAS.concat(Object.keys(pa).filter(function(k){return AREAS.indexOf(k)<0}));
+    barras($("porArea"),pa,chavesArea.filter(function(k){return pa[k]}));
+    barras($("porCoord"),pc,Object.keys(pc).sort(function(a,b){return pc[b]-pc[a]||a.localeCompare(b)}));
+
+    // filtros
+    var coords=Object.keys(linhas.reduce(function(o,i){o[i.coordenador]=1;return o},{})).sort();
+    var sel=$("selCoord"), antes=coordSel; sel.textContent="";
+    var o0=document.createElement("option");o0.value="";o0.textContent="Todos";sel.appendChild(o0);
+    coords.forEach(function(c){var o=document.createElement("option");o.value=c;o.textContent=c;sel.appendChild(o)});
+    if(coords.indexOf(antes)<0) coordSel=""; sel.value=coordSel;
+    var chips=$("chips"); chips.textContent="";
+    ["Todas"].concat(chavesArea.filter(function(k){return linhas.some(function(i){return i.area===k})})).forEach(function(nome){
+      var b=document.createElement("button");b.type="button";b.className="chip";b.textContent=nome;
+      var val=nome==="Todas"?"":nome; b.setAttribute("aria-pressed",String(areaSel===val));
+      b.addEventListener("click",function(){areaSel=val;desenhar()});chips.appendChild(b);
+    });
+
+    var vis=cls.filter(function(c){return (!areaSel||c.item.area===areaSel)&&(!coordSel||c.item.coordenador===coordSel)}).sort(ordenar);
+    var tb=$("corpo"); tb.textContent="";
+    if(!vis.length){var tr=document.createElement("tr");var td=document.createElement("td");td.colSpan=7;td.className="empty";td.textContent=linhas.length?"Nenhuma pendência com esses filtros.":"Carregue uma base para ver as pendências.";tr.appendChild(td);tb.appendChild(tr);return}
+    vis.forEach(function(c){
+      var tr=document.createElement("tr");
+      function td(txt,cl){var t=document.createElement("td");t.textContent=txt;if(cl)t.className=cl;tr.appendChild(t);return t}
+      var tp=td(c.item.promotor);
+      if(!c.item.resolvida&&pp[c.item.promotor]>2){var f=document.createElement("span");f.className="flag";f.textContent=pp[c.item.promotor]+" ABERTAS";tp.appendChild(f)}
+      td(c.item.pendencia);td(c.item.area);td(c.item.coordenador);td(br(c.item.prazo),"num");
+      td(c.sit==="Resolvida"?"—":String(c.dias),"num");
+      var ts=document.createElement("td");var p=document.createElement("span");p.className="pill "+CLS[c.sit];p.textContent=c.sit;ts.appendChild(p);tr.appendChild(ts);
+      tb.appendChild(tr);
+    });
+  }
+  function aplicar(res,nome){
+    linhas=res.itens; areaSel=""; coordSel=""; aviso(res.erros);
+    $("fonte").textContent=nome+" · "+linhas.length+" linha(s) lidas";
+    desenhar();
+  }
+
+  $("ref").value=iso(hojeLocal());
+  $("ref").addEventListener("change",desenhar);
+  $("selCoord").addEventListener("change",function(){coordSel=this.value;desenhar()});
+  $("btnCsv").addEventListener("click",function(){$("arquivo").click()});
+  $("btnEx").addEventListener("click",function(){aplicar({itens:exemploItens(refData()),erros:[]},"Base de exemplo (fictícia)")});
+  $("arquivo").addEventListener("change",function(){
+    var f=this.files&&this.files[0]; if(!f) return;
+    var fr=new FileReader();
+    fr.onload=function(){aplicar(lerBase(String(fr.result)),f.name)};
+    fr.onerror=function(){aviso(["Não foi possível ler o arquivo."])};
+    fr.readAsText(f,"utf-8");
+  });
+  window.__painel={lerBase:lerBase,csvExemplo:csvExemplo,classificar:classificar};
+  desenhar();
+})();
+</script>
+
+</body>
+</html>

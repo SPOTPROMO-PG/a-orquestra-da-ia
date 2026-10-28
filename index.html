@@ -1,0 +1,19 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>A Orquestra da IA</title>
+<meta name="claude:viewport-fit-sides">
+<style>
+:root{--stage:#0b0c0f}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--stage:#0b0c0f}}
+:root[data-theme="dark"]{--stage:#0b0c0f}
+html,body{margin:0;height:100%;background:var(--stage);overflow:hidden}
+#palco{position:fixed;inset:0;width:100%;height:100%;border:0;display:block;background:var(--stage)}
+</style>
+<iframe id="palco" src="palco.html" title="A Orquestra da IA" allow="fullscreen" allowfullscreen></iframe>
+<script>
+(function(){var f=document.getElementById('palco');function foco(){try{f.focus();f.contentWindow&&f.contentWindow.focus()}catch(e){}}
+f.addEventListener('load',foco);document.addEventListener('click',foco);
+// repassa as teclas se o foco estiver na página externa
+document.addEventListener('keydown',function(e){try{var w=f.contentWindow;w.focus();w.document.dispatchEvent(new KeyboardEvent('keydown',{key:e.key,code:e.code,bubbles:true}));e.preventDefault()}catch(err){}});})();
+</script>
+
+</body></html>

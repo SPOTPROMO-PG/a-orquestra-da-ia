@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<body>
+<title>Busca 360</title>
+<meta name="claude:viewport-fit-sides">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;800;900&display=swap">
+<style>
+:root{
+  --spot-red:#e3001b; --spot-red-deep:#c41029;
+  --ink:#333333; --text:#4a4a4a; --text-muted:#6e6e6e;
+  --surface:#ffffff; --surface-soft:#f9f8f8; --surface-gray:#ebeaeb; --line:#dedcdd;
+  --accent:#e3001b; --accent-soft:rgba(227,0,27,.08); --accent-line:rgba(227,0,27,.45);
+  --band:#e3001b; --on-band:#ffffff;
+  --ok-bg:#4a4a4a; --ok-fg:#ffffff;
+  --shadow:0 6px 24px rgba(0,0,0,.06);
+  --focus:#333333;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --spot-red:#ff3b52; --spot-red-deep:#e02a42;
+    --ink:#f1f1f3; --text:#d6d6da; --text-muted:#a4a5ae;
+    --surface:#202228; --surface-soft:#15161a; --surface-gray:#2a2c34; --line:#33353d;
+    --accent:#ff3b52; --accent-soft:rgba(255,59,82,.14); --accent-line:rgba(255,59,82,.55);
+    --band:#c41029; --on-band:#ffffff;
+    --ok-bg:#6a6d7a; --ok-fg:#ffffff;
+    --shadow:0 6px 24px rgba(0,0,0,.35);
+    --focus:#f1f1f3;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+    --spot-red:#ff3b52; --spot-red-deep:#e02a42;
+    --ink:#f1f1f3; --text:#d6d6da; --text-muted:#a4a5ae;
+    --surface:#202228; --surface-soft:#15161a; --surface-gray:#2a2c34; --line:#33353d;
+    --accent:#ff3b52; --accent-soft:rgba(255,59,82,.14); --accent-line:rgba(255,59,82,.55);
+    --band:#c41029; --on-band:#ffffff;
+    --ok-bg:#6a6d7a; --ok-fg:#ffffff;
+    --shadow:0 6px 24px rgba(0,0,0,.35);
+    --focus:#f1f1f3;
+    color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{font-size:clamp(15px,.5vw + 11px,20px);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--surface-soft);color:var(--text);font-family:"Montserrat",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-weight:400;line-height:1.4;min-height:100vh}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:6px}
+.wrap{width:100%;max-width:1840px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+svg.ic{width:1.1em;height:1.1em;flex:none;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.15em}
+
+/* Cabeçalho */
+.band{background:var(--band);color:var(--on-band)}
+.band .wrap{display:flex;align-items:center;gap:1.2rem;padding-top:.7rem;padding-bottom:.7rem;flex-wrap:wrap}
+.logo-chip{background:#fff;border-radius:12px;padding:.15rem .5rem;display:flex;align-items:center;flex:none}
+.logo-chip img{display:block;width:140px;height:auto}
+.titles{flex:1 1 20rem;min-width:0}
+.titles h1{margin:0;font-weight:900;font-size:2.3rem;line-height:1.05;letter-spacing:-.01em}
+.titles p{margin:.25rem 0 0;font-size:.95rem;font-weight:500;opacity:.96}
+.band-right{display:flex;align-items:center;gap:.9rem;flex-wrap:wrap}
+.selo{border:2px solid rgba(255,255,255,.9);border-radius:999px;padding:.25rem .8rem;font-weight:800;font-size:.8rem;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.refdate{display:flex;align-items:center;gap:.5rem;font-size:.85rem;font-weight:700}
+.refdate input{background:#fff;color:#333;border:0;border-radius:8px;padding:.35rem .5rem;font-weight:700;font-size:.9rem;min-height:2.3rem}
+.refdate button{background:transparent;border:2px solid rgba(255,255,255,.9);color:#fff;border-radius:8px;padding:.3rem .7rem;font-weight:700;font-size:.85rem;min-height:2.3rem}
+.refdate button[hidden]{display:none}
+.refdate :focus-visible,.band :focus-visible{outline-color:#fff}
+
+/* Busca */
+.searchrow{display:flex;gap:1rem;margin-top:1rem;align-items:stretch;flex-wrap:wrap}
+.searchbox{position:relative;flex:1 1 24rem;min-width:0}
+.searchbox .si{position:absolute;left:1.1rem;top:50%;transform:translateY(-50%);color:var(--text-muted);width:1.4em;height:1.4em;pointer-events:none}
+#q{width:100%;height:3.6rem;border:2px solid var(--line);background:var(--surface);border-radius:14px;padding:0 3.2rem 0 3.4rem;font-size:1.15rem;font-weight:500;color:var(--ink);box-shadow:var(--shadow)}
+#q::placeholder{color:var(--text-muted);font-weight:500}
+#q:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 4px var(--accent-soft),var(--shadow)}
+#qclear{position:absolute;right:.7rem;top:50%;transform:translateY(-50%);width:2.2rem;height:2.2rem;border:0;background:var(--surface-gray);border-radius:50%;display:none;align-items:center;justify-content:center;color:var(--ink)}
+#qclear.on{display:flex}
+.sug{position:absolute;z-index:20;left:0;right:0;top:calc(100% + .4rem);background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.18);padding:.35rem;margin:0;list-style:none;max-height:70vh;overflow:auto}
+.sug li{display:flex;align-items:center;gap:.8rem;padding:.55rem .8rem;border-radius:10px;cursor:pointer;color:var(--ink)}
+.sug li[aria-selected="true"]{background:var(--accent-soft);box-shadow:inset 4px 0 0 var(--accent)}
+.sug .kind{flex:none;min-width:5.4rem;text-align:center;font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border:1.5px solid var(--line);border-radius:999px;padding:.12rem .5rem;color:var(--text)}
+.sug .lbl{font-weight:700}
+.sug .sub{color:var(--text-muted);font-size:.85rem;margin-left:auto;text-align:right}
+.sug .none{color:var(--text-muted);cursor:default}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.55rem;border-radius:14px;border:2px solid var(--accent);background:var(--accent);color:#fff;font-weight:800;padding:0 1.4rem;min-height:3.6rem;font-size:1rem;white-space:nowrap}
+:root:not([data-theme="dark"]) .btn{--btn-fg:#fff}
+.btn:hover{background:var(--spot-red-deep);border-color:var(--spot-red-deep)}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.ghost:hover{background:var(--accent-soft)}
+.btn.small{min-height:2.5rem;padding:0 1rem;font-size:.9rem;border-radius:10px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn:not(.ghost){color:#15161a}}
+:root[data-theme="dark"] .btn:not(.ghost){color:#15161a}
+
+/* Cards e layout */
+main{padding-top:0;padding-bottom:.6rem}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:1.1rem 1.3rem}
+.card h2,.card h3{margin:0 0 .7rem;color:var(--ink);font-weight:800;font-size:1.05rem}
+.sect{margin:1.1rem 0 .6rem;display:flex;align-items:baseline;gap:.8rem;flex-wrap:wrap}
+.sect h2{margin:0;font-size:1.25rem;font-weight:800;color:var(--ink)}
+.sect span{color:var(--text-muted);font-size:.9rem}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1rem}
+.kpi{padding:.8rem 1.3rem .85rem;border-top:5px solid var(--line)}
+.kpi.hot{border-top-color:var(--accent)}
+.kpi .k{font-weight:700;font-size:.9rem;color:var(--text-muted)}
+.kpi .n{font-weight:800;font-size:3.3rem;line-height:1;color:var(--ink);margin:.15rem 0 .1rem;font-variant-numeric:tabular-nums}
+.kpi.hot .n{color:var(--accent)}
+.kpi .s{font-size:.85rem;color:var(--text-muted)}
+.groups{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.grp{padding:0;overflow:hidden;display:flex;flex-direction:column}
+.grp>header{display:flex;align-items:center;gap:.7rem;padding:.65rem 1.1rem;border-bottom:1px solid var(--line);background:var(--surface-gray)}
+.chip{display:inline-flex;align-items:center;justify-content:center;background:var(--accent);color:#fff;font-weight:800;font-size:.78rem;border-radius:7px;padding:.1rem .5rem;min-width:2.1rem}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip{color:#15161a}}
+:root[data-theme="dark"] .chip{color:#15161a}
+.grp header b{font-weight:800;color:var(--ink);font-size:.98rem;flex:1}
+.grp header .count{font-weight:800;color:var(--ink);font-size:.9rem;white-space:nowrap}
+.alert{display:flex;align-items:center;gap:.7rem;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--line);padding:.55rem 1.1rem;color:inherit}
+.alert:last-child{border-bottom:0}
+.alert:hover{background:var(--accent-soft)}
+.alert .tx{flex:1;min-width:0}
+.alert .t{display:block;font-weight:700;color:var(--ink);font-size:.95rem}
+.alert .d{display:block;font-size:.82rem;color:var(--text-muted);line-height:1.35}
+.alert .go{color:var(--accent);flex:none}
+.explain h3{margin-bottom:.4rem}
+.explain{padding:.9rem 1.3rem}
+.explain ul{list-style:none;margin:0 0 .55rem;padding:0;display:grid;gap:.3rem}
+.explain li{display:flex;justify-content:space-between;gap:.8rem;border-bottom:1px dashed var(--line);padding-bottom:.3rem;font-size:.9rem}
+.explain li b{color:var(--ink)}
+.explain li span{color:var(--text-muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.explain p{margin:0;font-size:.84rem;color:var(--text)}
+.explain p strong{color:var(--accent)}
+
+/* Fichas */
+.topbar{display:flex;align-items:center;gap:1rem;margin:1.2rem 0 .8rem;flex-wrap:wrap}
+.pagehead{display:flex;align-items:flex-start;gap:1.2rem;flex-wrap:wrap}
+.pagehead .tt{flex:1 1 18rem;min-width:0}
+.pagehead .back{margin-top:.2rem}
+#view>div>.card:first-child{margin-top:1rem}
+.eyebrow{font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)}
+.pagehead h2{margin:.1rem 0 .4rem;font-size:2.2rem;line-height:1.05;font-weight:900;color:var(--ink)}
+.tags{display:flex;gap:.5rem;flex-wrap:wrap}
+.tag{display:inline-flex;align-items:center;gap:.4rem;border:1.5px solid var(--line);border-radius:999px;padding:.15rem .75rem;font-weight:700;font-size:.85rem;color:var(--ink);background:var(--surface-soft)}
+.tag.red{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.tag.dark{background:var(--ok-bg);border-color:var(--ok-bg);color:var(--ok-fg)}
+.grid2>*,.grid2b>*,.groups>*,.kpis>*{min-width:0}
+.grid2{display:grid;grid-template-columns:5fr 7fr;gap:1rem;margin-top:1rem}
+.grid2b{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem}
+.alertbox{margin-top:1rem;border:1.5px solid var(--accent-line);background:var(--accent-soft);border-radius:14px;padding:.3rem 0;overflow:hidden}
+.alertbox .alert{border-bottom-color:var(--accent-line)}
+.alertbox .alert .t{display:flex;align-items:center;gap:.5rem}
+.okbox{margin-top:1rem;display:flex;align-items:center;gap:.6rem;font-weight:700;color:var(--ink);border:1.5px solid var(--line);border-radius:14px;padding:.7rem 1.1rem;background:var(--surface)}
+dl.kv{display:grid;grid-template-columns:auto 1fr;gap:.55rem 1.2rem;margin:0}
+dl.kv dt{color:var(--text-muted);font-weight:600;font-size:.88rem}
+dl.kv dd{margin:0;color:var(--ink);font-weight:700}
+.link{background:none;border:0;padding:0;font-weight:700;color:var(--ink);text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:3px;text-align:left}
+.link:hover{color:var(--accent)}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.tb{width:100%;border-collapse:collapse;font-size:.9rem}
+table.tb th{text-align:left;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);font-weight:800;padding:.45rem .7rem;border-bottom:2px solid var(--line);white-space:nowrap}
+table.tb td{padding:.5rem .7rem;border-bottom:1px solid var(--line);color:var(--ink);white-space:nowrap;vertical-align:middle}
+table.tb tr:last-child td{border-bottom:0}
+table.tb td.num{font-variant-numeric:tabular-nums}
+table.tb tr.flag td{background:var(--accent-soft)}
+.st{display:inline-flex;align-items:center;gap:.4rem;font-weight:700}
+.st.ok{color:var(--ink)}
+.st.no{color:var(--accent)}
+.st .badge{display:inline-flex;width:1.35rem;height:1.35rem;border-radius:50%;align-items:center;justify-content:center;flex:none}
+.st.ok .badge{background:var(--ok-bg);color:var(--ok-fg)}
+.st.no .badge{background:var(--accent);color:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .st.no .badge{color:#15161a}}
+:root[data-theme="dark"] .st.no .badge{color:#15161a}
+.st .badge svg{width:.8rem;height:.8rem;stroke-width:3.2}
+.obs{display:inline-flex;align-items:center;gap:.3rem;font-size:.72rem;font-weight:800;border:1.5px solid var(--accent);color:var(--accent);border-radius:6px;padding:.05rem .4rem;margin-right:.3rem;text-transform:uppercase;letter-spacing:.03em}
+.tag-act{display:inline-flex;align-items:center;gap:.4rem;font-weight:700}
+.tag-act::before{content:"";width:.7rem;height:.7rem;border-radius:50%;background:var(--ok-bg);display:inline-block}
+.tag-off::before{content:"";width:.7rem;height:.7rem;background:var(--accent);display:inline-block}
+
+/* Heatmap */
+.heat{display:grid;grid-template-columns:3.2rem repeat(7,1fr);gap:.35rem;align-items:stretch}
+.heat .hd{font-size:.72rem;font-weight:800;color:var(--text-muted);text-align:center;text-transform:uppercase;letter-spacing:.04em}
+.heat .wk{font-size:.72rem;font-weight:700;color:var(--text-muted);display:flex;align-items:center}
+.cell{position:relative;min-height:2.3rem;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800}
+.cell .dn{position:absolute;left:.35rem;top:.15rem;font-size:.62rem;font-weight:700;opacity:.9}
+.cell.on{background:var(--ok-bg);color:var(--ok-fg)}
+.cell.no{background:var(--accent);color:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .cell.no{color:#15161a}}
+:root[data-theme="dark"] .cell.no{color:#15161a}
+.cell.none{background:var(--surface-gray);color:var(--text-muted)}
+.cell.void{background:transparent}
+.cell svg{width:1.05rem;height:1.05rem;stroke-width:3.2;margin-top:.45rem}
+.cell.none .dash{display:block;width:.7rem;height:2px;background:currentColor;opacity:.6;margin-top:.45rem}
+.legend{display:flex;gap:1.1rem;flex-wrap:wrap;margin-top:.8rem;font-size:.82rem;font-weight:600;color:var(--text)}
+.legend span{display:inline-flex;align-items:center;gap:.4rem}
+.legend i{width:1.2rem;height:1.2rem;border-radius:5px;display:inline-flex;align-items:center;justify-content:center}
+.legend i svg{width:.75rem;height:.75rem;stroke-width:3.4}
+.legend .l-on{background:var(--ok-bg);color:var(--ok-fg)}
+.legend .l-no{background:var(--accent);color:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .legend .l-no{color:#15161a}}
+:root[data-theme="dark"] .legend .l-no{color:#15161a}
+.legend .l-none{background:var(--surface-gray)}
+
+/* Comparativo de rota e linha do tempo */
+.cmp{display:grid;grid-template-columns:1fr auto 1fr;gap:.8rem;align-items:center;margin-bottom:.9rem}
+.cmp .bx{border:1.5px solid var(--line);border-radius:12px;padding:.7rem .9rem;background:var(--surface-soft)}
+.cmp .bx small{display:block;font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted)}
+.cmp .bx b{font-size:1.5rem;font-weight:800;color:var(--ink);line-height:1.2}
+.cmp.diff .bx{border-color:var(--accent);background:var(--accent-soft)}
+.cmp.diff .bx b{color:var(--accent)}
+.cmp .vs{font-weight:900;color:var(--text-muted);font-size:1.3rem}
+.cmp.diff .vs{color:var(--accent)}
+.verdict{display:flex;align-items:center;gap:.6rem;font-weight:800;color:var(--ink);margin:0 0 1rem}
+.verdict.diff{color:var(--accent)}
+.tl{list-style:none;margin:0;padding:0 0 0 1.2rem;border-left:3px solid var(--line)}
+.tl li{position:relative;padding:0 0 .9rem 1rem}
+.tl li:last-child{padding-bottom:0}
+.tl li::before{content:"";position:absolute;left:-1.62rem;top:.35rem;width:.9rem;height:.9rem;border-radius:50%;background:var(--surface);border:3px solid var(--ok-bg)}
+.tl li.dest::before{border-color:var(--accent);background:var(--accent)}
+.tl .dt{font-size:.8rem;font-weight:700;color:var(--text-muted)}
+.tl .ev{font-weight:700;color:var(--ink)}
+.tl .ev span{font-weight:500;color:var(--text)}
+
+/* Resumo e-mail */
+dialog{border:0;border-radius:16px;padding:0;width:min(60rem,calc(100vw - 24px));max-height:calc(100vh - 24px);background:var(--surface);color:var(--text);box-shadow:0 30px 80px rgba(0,0,0,.4)}
+dialog::backdrop{background:rgba(10,10,14,.6)}
+.dlg-h{display:flex;align-items:center;gap:1rem;padding:1rem 1.3rem;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.dlg-h h2{margin:0;flex:1;font-size:1.3rem;font-weight:800;color:var(--ink)}
+.dlg-b{padding:1rem 1.3rem;overflow:auto;max-height:calc(100vh - 12rem)}
+.dlg-b .hint{margin:0 0 .9rem;font-weight:700;color:var(--ink)}
+.mailprev>table{margin:0 auto}
+.mailprev{background:#fff;color:#333;border:1px solid var(--line);border-radius:10px;padding:1rem;overflow-x:auto}
+.copied{font-weight:700;color:var(--ink);min-height:1.4em;padding:0 1.3rem 1rem}
+
+footer{border-top:1px solid var(--line);margin-top:.4rem}
+footer p{margin:0;padding:.7rem 0 .9rem;font-size:.85rem;color:var(--text-muted);font-weight:500}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+@media (max-width:1100px){
+  .groups{grid-template-columns:repeat(2,1fr)}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .grid2,.grid2b{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .groups{grid-template-columns:1fr}
+  .kpi .n{font-size:2.6rem}
+  .kpi{padding:.8rem 1rem}
+  .titles h1{font-size:1.9rem}
+  .pagehead h2{font-size:1.9rem}
+  .band-right{width:100%}
+  .btn{width:100%}
+  .logo-chip img{width:120px}
+  .cmp{grid-template-columns:1fr}
+  .cmp .vs{text-align:center}
+  .sug .sub{display:none}
+  #q{font-size:.95rem;padding-left:3rem;padding-right:2.8rem}
+  .searchbox .si{left:.9rem}
+  .heat{grid-template-columns:2.6rem repeat(7,1fr);gap:.25rem}
+  .cell{min-height:2.3rem}
+}
+@media print{.band{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+
+<header class="band">
+  <div class="wrap">
+    <div class="logo-chip"><img src="../img/spot-logo.png" alt="SPOT" width="140" height="46"></div>
+    <div class="titles">
+      <h1>Busca 360</h1>
+      <p>Catálogo + Movimentação + Visitas (Retail-X) numa página só</p>
+    </div>
+    <div class="band-right">
+      <span class="selo">Dados fictícios</span>
+      <div class="refdate">
+        <label for="ref">Data de referência</label>
+        <input type="date" id="ref">
+        <button type="button" id="hoje" hidden>Hoje</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="searchrow">
+    <div class="searchbox">
+      <svg class="ic si" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="q" type="text" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="sug" aria-autocomplete="list" placeholder="Busque por loja, promotor, rota ou cidade" aria-label="Busque por loja, promotor, rota ou cidade">
+      <button type="button" id="qclear" aria-label="Limpar busca"></button>
+      <ul class="sug" id="sug" role="listbox" hidden></ul>
+    </div>
+    <button type="button" class="btn" id="mailbtn"></button>
+  </div>
+  <div id="view" aria-live="polite"></div>
+</main>
+
+<footer><div class="wrap"><p>Protótipo com dados fictícios. As regras R1–R5 rodam no próprio navegador.</p></div></footer>
+
+<dialog id="dlg" aria-labelledby="dlgtt">
+  <div class="dlg-h">
+    <h2 id="dlgtt">Resumo do dia para e-mail</h2>
+    <button type="button" class="btn small" id="copybtn"></button>
+    <button type="button" class="btn small ghost" id="closebtn">Fechar</button>
+  </div>
+  <div class="dlg-b">
+    <p class="hint">Este resumo pode ir sozinho todo dia no corpo do e-mail.</p>
+    <div class="mailprev" id="mailprev"></div>
+  </div>
+  <div class="copied" id="copied" role="status" aria-live="polite"></div>
+</dialog>
+
+<script type="application/json" id="dados">{"versao":1,"lojas":[{"loja":"Loja 001","rede":"Rede B","cidade":"São Paulo","uf":"SP","rota":"Rota 01","promotor":"Promotor 01","coord":"Coord. 1"},{"loja":"Loja 002","rede":"Rede C","cidade":"São Paulo","uf":"SP","rota":"Rota 01","promotor":"Promotor 01","coord":"Coord. 1"},{"loja":"Loja 003","rede":"Rede D","cidade":"São Paulo","uf":"SP","rota":"Rota 01","promotor":"Promotor 01","coord":"Coord. 1"},{"loja":"Loja 004","rede":"Rede E","cidade":"São Paulo","uf":"SP","rota":"Rota 01","promotor":"Promotor 01","coord":"Coord. 1"},{"loja":"Loja 005","rede":"Rede A","cidade":"São Paulo","uf":"SP","rota":"Rota 02","promotor":"Promotor 02","coord":"Coord. 1"},{"loja":"Loja 006","rede":"Rede B","cidade":"São Paulo","uf":"SP","rota":"Rota 02","promotor":"Promotor 02","coord":"Coord. 1"},{"loja":"Loja 007","rede":"Rede C","cidade":"São Paulo","uf":"SP","rota":"Rota 02","promotor":"Promotor 02","coord":"Coord. 1"},{"loja":"Loja 008","rede":"Rede D","cidade":"São Paulo","uf":"SP","rota":"Rota 02","promotor":"Promotor 02","coord":"Coord. 1"},{"loja":"Loja 009","rede":"Rede E","cidade":"Guarulhos","uf":"SP","rota":"Rota 03","promotor":"Promotor 03","coord":"Coord. 1"},{"loja":"Loja 010","rede":"Rede A","cidade":"Guarulhos","uf":"SP","rota":"Rota 03","promotor":"Promotor 03","coord":"Coord. 1"},{"loja":"Loja 011","rede":"Rede B","cidade":"Guarulhos","uf":"SP","rota":"Rota 03","promotor":"Promotor 03","coord":"Coord. 1"},{"loja":"Loja 012","rede":"Rede C","cidade":"Guarulhos","uf":"SP","rota":"Rota 03","promotor":"Promotor 03","coord":"Coord. 1"},{"loja":"Loja 013","rede":"Rede D","cidade":"Osasco","uf":"SP","rota":"Rota 04","promotor":"Promotor 04","coord":"Coord. 1"},{"loja":"Loja 014","rede":"Rede E","cidade":"Osasco","uf":"SP","rota":"Rota 04","promotor":"Promotor 04","coord":"Coord. 1"},{"loja":"Loja 015","rede":"Rede A","cidade":"Osasco","uf":"SP","rota":"Rota 04","promotor":"Promotor 04","coord":"Coord. 1"},{"loja":"Loja 016","rede":"Rede B","cidade":"Osasco","uf":"SP","rota":"Rota 04","promotor":"Promotor 04","coord":"Coord. 1"},{"loja":"Loja 017","rede":"Rede C","cidade":"Santo André","uf":"SP","rota":"Rota 05","promotor":"Promotor 05","coord":"Coord. 2"},{"loja":"Loja 018","rede":"Rede D","cidade":"Santo André","uf":"SP","rota":"Rota 05","promotor":"Promotor 05","coord":"Coord. 2"},{"loja":"Loja 019","rede":"Rede E","cidade":"Santo André","uf":"SP","rota":"Rota 05","promotor":"Promotor 05","coord":"Coord. 2"},{"loja":"Loja 020","rede":"Rede A","cidade":"Santo André","uf":"SP","rota":"Rota 05","promotor":"Promotor 05","coord":"Coord. 2"},{"loja":"Loja 021","rede":"Rede B","cidade":"Campinas","uf":"SP","rota":"Rota 06","promotor":"Promotor 06","coord":"Coord. 2"},{"loja":"Loja 022","rede":"Rede C","cidade":"Campinas","uf":"SP","rota":"Rota 06","promotor":"Promotor 06","coord":"Coord. 2"},{"loja":"Loja 023","rede":"Rede D","cidade":"Campinas","uf":"SP","rota":"Rota 06","promotor":"Promotor 06","coord":"Coord. 2"},{"loja":"Loja 024","rede":"Rede E","cidade":"Campinas","uf":"SP","rota":"Rota 06","promotor":"Promotor 06","coord":"Coord. 2"},{"loja":"Loja 025","rede":"Rede A","cidade":"Sorocaba","uf":"SP","rota":"Rota 07","promotor":"Promotor 07","coord":"Coord. 2"},{"loja":"Loja 026","rede":"Rede B","cidade":"Sorocaba","uf":"SP","rota":"Rota 07","promotor":"Promotor 07","coord":"Coord. 2"},{"loja":"Loja 027","rede":"Rede C","cidade":"Sorocaba","uf":"SP","rota":"Rota 07","promotor":"Promotor 07","coord":"Coord. 2"},{"loja":"Loja 028","rede":"Rede D","cidade":"Sorocaba","uf":"SP","rota":"Rota 07","promotor":"Promotor 07","coord":"Coord. 2"},{"loja":"Loja 029","rede":"Rede E","cidade":"São Bernardo do Campo","uf":"SP","rota":"Rota 08","promotor":"Promotor 12","coord":"Coord. 3"},{"loja":"Loja 030","rede":"Rede A","cidade":"São Bernardo do Campo","uf":"SP","rota":"Rota 08","promotor":"Promotor 12","coord":"Coord. 3"},{"loja":"Loja 031","rede":"Rede B","cidade":"São Bernardo do Campo","uf":"SP","rota":"Rota 08","promotor":"Promotor 12","coord":"Coord. 3"},{"loja":"Loja 032","rede":"Rede C","cidade":"São Bernardo do Campo","uf":"SP","rota":"Rota 08","promotor":"Promotor 12","coord":"Coord. 3"},{"loja":"Loja 033","rede":"Rede D","cidade":"Santos","uf":"SP","rota":"Rota 09","promotor":"Promotor 09","coord":"Coord. 3"},{"loja":"Loja 034","rede":"Rede E","cidade":"Santos","uf":"SP","rota":"Rota 09","promotor":"Promotor 09","coord":"Coord. 3"},{"loja":"Loja 035","rede":"Rede A","cidade":"Santos","uf":"SP","rota":"Rota 09","promotor":"Promotor 09","coord":"Coord. 3"},{"loja":"Loja 036","rede":"Rede B","cidade":"Santos","uf":"SP","rota":"Rota 09","promotor":"Promotor 09","coord":"Coord. 3"},{"loja":"Loja 037","rede":"Rede C","cidade":"Jundiaí","uf":"SP","rota":"Rota 10","promotor":"Promotor 11","coord":"Coord. 3"},{"loja":"Loja 038","rede":"Rede D","cidade":"Jundiaí","uf":"SP","rota":"Rota 10","promotor":"Promotor 11","coord":"Coord. 3"},{"loja":"Loja 039","rede":"Rede E","cidade":"Jundiaí","uf":"SP","rota":"Rota 10","promotor":"Promotor 11","coord":"Coord. 3"},{"loja":"Loja 040","rede":"Rede A","cidade":"Jundiaí","uf":"SP","rota":"Rota 10","promotor":"Promotor 11","coord":"Coord. 3"}],"coordenadores":["Coord. 1","Coord. 2","Coord. 3"],"promotores":["Promotor 01","Promotor 02","Promotor 03","Promotor 04","Promotor 05","Promotor 06","Promotor 07","Promotor 08","Promotor 09","Promotor 10","Promotor 11","Promotor 12"],"movimentacao":[{"promotor":"Promotor 01","tipo":"Admissão","off":-420,"de":null,"para":"Rota 01"},{"promotor":"Promotor 02","tipo":"Admissão","off":-380,"de":null,"para":"Rota 02"},{"promotor":"Promotor 03","tipo":"Admissão","off":-350,"de":null,"para":"Rota 03"},{"promotor":"Promotor 10","tipo":"Admissão","off":-330,"de":null,"para":"Rota 10"},{"promotor":"Promotor 04","tipo":"Admissão","off":-300,"de":null,"para":"Rota 04"},{"promotor":"Promotor 05","tipo":"Admissão","off":-260,"de":null,"para":"Rota 05"},{"promotor":"Promotor 06","tipo":"Admissão","off":-240,"de":null,"para":"Rota 06"},{"promotor":"Promotor 07","tipo":"Admissão","off":-210,"de":null,"para":"Rota 07"},{"promotor":"Promotor 08","tipo":"Admissão","off":-180,"de":null,"para":"Rota 08"},{"promotor":"Promotor 09","tipo":"Admissão","off":-150,"de":null,"para":"Rota 09"},{"promotor":"Promotor 11","tipo":"Admissão","off":-140,"de":null,"para":"Rota 02"},{"promotor":"Promotor 10","tipo":"Desligamento","off":-75,"de":"Rota 10","para":null},{"promotor":"Promotor 11","tipo":"Transferência","off":-70,"de":"Rota 02","para":"Rota 10"},{"promotor":"Promotor 05","tipo":"Desligamento","off":-12,"de":"Rota 05","para":null},{"promotor":"Promotor 08","tipo":"Desligamento","off":-10,"de":"Rota 08","para":null},{"promotor":"Promotor 12","tipo":"Admissão","off":-9,"de":null,"para":"Rota 08"},{"promotor":"Promotor 04","tipo":"Transferência","off":-5,"de":"Rota 04","para":"Rota 09"},{"promotor":"Promotor 09","tipo":"Transferência","off":-5,"de":"Rota 09","para":"Rota 04"}],"retailx":{"semente":360,"janelaDias":28,"padroes":[[1,3,5],[2,4],[1,2,4]],"trocaTitularRota08":{"ate":-10,"antes":"Promotor 08","depois":"Promotor 12"}},"plantadas":{"r3_sem_visita":[{"loja":"Loja 007","ultimoRealizadoAte":-8},{"loja":"Loja 023","ultimoRealizadoAte":-10},{"loja":"Loja 034","ultimoRealizadoAte":-13}],"r1_visitas_fantasma":[{"promotor":"Promotor 08","loja":"Loja 029","off":-6},{"promotor":"Promotor 08","loja":"Loja 031","off":-3}],"r4_fora_da_rota":[{"promotor":"Promotor 01","loja":"Loja 006","off":-2},{"promotor":"Promotor 06","loja":"Loja 013","off":-3}]}}</script>
+<script>
+(function(){
+"use strict";
+var DADOS = JSON.parse(document.getElementById("dados").textContent);
+var DAY = 86400000;
+var DOW = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+var DOWH = ["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"];
+
+/* ---------- utilidades ---------- */
+var now = new Date();
+var BASE = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+function dObj(o){ return new Date(BASE + o*DAY); }
+function dow(o){ return dObj(o).getUTCDay(); }
+function p2(n){ return (n<10?"0":"")+n; }
+function fmt(o){ var d=dObj(o); return p2(d.getUTCDate())+"/"+p2(d.getUTCMonth()+1); }
+function fmtFull(o){ var d=dObj(o); return p2(d.getUTCDate())+"/"+p2(d.getUTCMonth()+1)+"/"+d.getUTCFullYear(); }
+function iso(o){ return dObj(o).toISOString().slice(0,10); }
+function isoToOff(s){ var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||""); if(!m) return null; return Math.round((Date.UTC(+m[1],+m[2]-1,+m[3])-BASE)/DAY); }
+function hm(min){ return p2(Math.floor(min/60))+":"+p2(min%60); }
+function plural(n,s,p){ return n+" "+(n===1?s:p); }
+function norm(s){ return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,""); }
+function prevWeekday(o){ while(dow(o)===0||dow(o)===6) o--; return o; }
+var SVGNS="http://www.w3.org/2000/svg";
+var ICONS={
+  check:"M5 12.5l4.5 4.5L19 7.5",
+  cross:"M6 6l12 12M18 6L6 18",
+  arrow:"M9 5l7 7-7 7",
+  back:"M15 5l-7 7 7 7",
+  warn:"M12 4l9.5 16h-19zM12 10v4.5M12 17.4v.1",
+  mail:"M3.5 6.5h17v11h-17zM3.5 7l8.5 6.5L20.5 7",
+  copy:"M9 9h10v11H9zM5 15V4h10",
+  search:"M11 4a7 7 0 100 14 7 7 0 000-14zM20 20l-3.5-3.5"
+};
+function icon(name){
+  var s=document.createElementNS(SVGNS,"svg"); s.setAttribute("viewBox","0 0 24 24"); s.setAttribute("class","ic"); s.setAttribute("aria-hidden","true");
+  var p=document.createElementNS(SVGNS,"path"); p.setAttribute("d",ICONS[name]); s.appendChild(p); return s;
+}
+function h(tag, props){
+  var el=document.createElement(tag), i, k;
+  if(props){ for(k in props){ var v=props[k];
+    if(k==="class") el.className=v; else if(k==="text") el.textContent=v;
+    else if(k.slice(0,2)==="on") el.addEventListener(k.slice(2),v);
+    else if(v!==false && v!==null && v!==undefined) el.setAttribute(k,v===true?"":v);
+  } }
+  for(i=2;i<arguments.length;i++){ var c=arguments[i]; if(c===null||c===undefined||c===false) continue;
+    if(Array.isArray(c)){ c.forEach(function(x){ if(x) el.appendChild(typeof x==="string"?document.createTextNode(x):x); }); }
+    else el.appendChild(typeof c==="string"?document.createTextNode(c):c); }
+  return el;
+}
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+
+/* ---------- base fictícia: Catálogo + Movimentação (JSON) e Retail-X (gerada) ---------- */
+var LOJAS = DADOS.lojas;
+var LOJA = {}; LOJAS.forEach(function(l){ LOJA[l.loja]=l; });
+var MOV = DADOS.movimentacao.slice().sort(function(a,b){ return a.off-b.off; });
+var PROMS = DADOS.promotores;
+var ROTAS = []; LOJAS.forEach(function(l){ if(ROTAS.indexOf(l.rota)<0) ROTAS.push(l.rota); });
+var CIDADES = []; LOJAS.forEach(function(l){ if(CIDADES.indexOf(l.cidade)<0) CIDADES.push(l.cidade); });
+function lojasDaRota(r){ return LOJAS.filter(function(l){ return l.rota===r; }); }
+function titularCatalogo(r){ return lojasDaRota(r)[0].promotor; }
+
+function gerarVisitas(){
+  var cfg=DADOS.retailx, rnd=mulberry32(cfg.semente), V=[], id=0, i, o;
+  var missed={};
+  for(o=-(cfg.janelaDias-1); o<=0; o++){
+    var w=dow(o); if(w===0||w===6) continue;
+    for(i=0;i<LOJAS.length;i++){
+      var l=LOJAS[i], n=i+1, rn=parseInt(l.rota.slice(5),10), pat=cfg.padroes[(n+rn)%cfg.padroes.length];
+      if(pat.indexOf(w)<0) continue;
+      var prom=l.promotor;
+      if(l.rota==="Rota 08") prom = o<=cfg.trocaTitularRota08.ate ? cfg.trocaTitularRota08.antes : cfg.trocaTitularRota08.depois;
+      var r1=rnd(), r2=rnd(), r3=rnd();
+      var falha = (pat===cfg.padroes[0]) && !missed[l.loja] && r1<0.15;
+      missed[l.loja]=falha;
+      var ci=8*60+Math.floor(r2*390), dur=25+Math.floor(r3*50);
+      V.push({id:0,loja:l.loja,prom:prom,off:o,status:falha?"Não realizada":"Realizada",cin:falha?null:ci,cout:falha?null:ci+dur});
+    }
+  }
+  // R3: lojas plantadas sem visita realizada depois de certa data
+  DADOS.plantadas.r3_sem_visita.forEach(function(p){
+    V.forEach(function(v){ if(v.loja===p.loja && v.off>p.ultimoRealizadoAte){ v.status="Não realizada"; v.cin=null; v.cout=null; } });
+  });
+  // R1 e R4: visitas extras plantadas
+  var extras=[].concat(DADOS.plantadas.r1_visitas_fantasma, DADOS.plantadas.r4_fora_da_rota);
+  extras.forEach(function(p,k){
+    var off=prevWeekday(p.off), ci=9*60+k*47, dur=40;
+    V.push({id:0,loja:p.loja,prom:p.promotor,off:off,status:"Realizada",cin:ci,cout:ci+dur});
+  });
+  V.sort(function(a,b){ return a.off-b.off || (a.loja<b.loja?-1:1) || a.cin-b.cin; });
+  V.forEach(function(v,k){ v.id=k+1; });
+  return V;
+}
+var VISITAS = gerarVisitas();
+
+/* ---------- regras R1–R5 ---------- */
+var REGRAS = {
+  R1:{nome:"Visita após desligamento",sev:5},
+  R2:{nome:"Catálogo desatualizado",sev:2},
+  R3:{nome:"Loja sem visita há 7+ dias",sev:3},
+  R4:{nome:"Visita fora da rota",sev:1},
+  R5:{nome:"Rota sem titular",sev:4}
+};
+var memo={};
+function calc(ref){
+  if(memo[ref]) return memo[ref];
+  var C={ref:ref}, V=VISITAS.filter(function(v){ return v.off<=ref; });
+  C.visitas=V;
+  // status de cada promotor pela movimentação
+  C.prom={};
+  PROMS.forEach(function(nome){
+    var movs=MOV.filter(function(m){ return m.promotor===nome && m.off<=ref; });
+    var ult=movs[movs.length-1], st="Não admitido", dDes=null, rotaMov=null;
+    if(ult){ if(ult.tipo==="Desligamento"){ st="Desligado"; dDes=ult.off; } else { st="Ativo"; rotaMov=ult.para; } }
+    var rotaCat=null; for(var i=0;i<LOJAS.length;i++){ if(LOJAS[i].promotor===nome){ rotaCat=LOJAS[i].rota; break; } }
+    C.prom[nome]={nome:nome,status:st,dDes:dDes,rotaMov:rotaMov,rotaCat:rotaCat,movs:movs,ultMov:ult||null};
+  });
+  // última visita realizada por loja
+  C.ultReal={}; V.forEach(function(v){ if(v.status==="Realizada") C.ultReal[v.loja]=Math.max(C.ultReal[v.loja]===undefined?-9999:C.ultReal[v.loja], v.off); });
+  var A=[];
+  // R1
+  PROMS.forEach(function(nome){
+    var p=C.prom[nome]; if(p.status!=="Desligado") return;
+    var vs=V.filter(function(v){ return v.prom===nome && v.status==="Realizada" && v.off>p.dDes; });
+    if(!vs.length) return;
+    var last=vs[vs.length-1].off, ls=[]; vs.forEach(function(v){ if(ls.indexOf(v.loja)<0) ls.push(v.loja); });
+    A.push({rule:"R1",kind:"promotor",target:nome,prom:nome,lojas:ls,
+      title:nome, detail:plural(vs.length,"visita","visitas")+" após o desligamento de "+fmt(p.dDes)+"; última em "+fmt(last),
+      urg:vs.length});
+  });
+  // R2
+  PROMS.forEach(function(nome){
+    var p=C.prom[nome]; if(!p.ultMov || p.ultMov.tipo!=="Transferência") return;
+    if(p.rotaCat && p.rotaCat!==p.ultMov.para){
+      A.push({rule:"R2",kind:"promotor",target:nome,prom:nome,lojas:lojasDaRota(p.rotaCat).map(function(l){return l.loja;}),
+        title:nome, detail:p.ultMov.de+" → "+p.ultMov.para+" em "+fmt(p.ultMov.off)+"; catálogo ainda mostra "+p.rotaCat,
+        urg:ref-p.ultMov.off});
+    }
+  });
+  // R3
+  LOJAS.forEach(function(l){
+    var u=C.ultReal[l.loja], dias=(u===undefined)?null:ref-u;
+    if(dias===null || dias>=7){
+      A.push({rule:"R3",kind:"loja",target:l.loja,lojas:[l.loja],
+        title:l.loja, detail:(dias===null?"Sem visita realizada em 28 dias":"Última realizada há "+dias+" dias ("+fmt(u)+")")+" · "+l.rota,
+        urg:dias===null?99:dias});
+    }
+  });
+  // R4
+  V.forEach(function(v){
+    var p=C.prom[v.prom]; if(!p||p.status!=="Ativo"||!p.rotaCat) return;
+    var l=LOJA[v.loja]; if(l.rota!==p.rotaCat){
+      A.push({rule:"R4",kind:"loja",target:v.loja,prom:v.prom,lojas:[v.loja],visitaId:v.id,
+        title:v.prom+" em "+v.loja, detail:"Em "+fmt(v.off)+": loja da "+l.rota+", promotor da "+p.rotaCat,
+        urg:ref-v.off});
+    }
+  });
+  // R5
+  ROTAS.forEach(function(r){
+    var t=titularCatalogo(r), p=C.prom[t];
+    if(p && p.status==="Desligado"){
+      A.push({rule:"R5",kind:"promotor",target:t,prom:t,lojas:lojasDaRota(r).map(function(l){return l.loja;}),rota:r,
+        title:r+" sem titular", detail:t+" desligado em "+fmt(p.dDes)+"; "+plural(lojasDaRota(r).length,"loja afetada","lojas afetadas"),
+        urg:ref-p.dDes});
+    }
+  });
+  A.forEach(function(a,k){ a.id="A"+k; a.sevN=REGRAS[a.rule].sev*1000+Math.min(a.urg,999); });
+  var ordem={R1:1,R2:2,R3:3,R4:4,R5:5};
+  A.sort(function(a,b){ return ordem[a.rule]-ordem[b.rule] || b.urg-a.urg || (a.title<b.title?-1:1); });
+  C.alertas=A;
+  C.porRegra={R1:[],R2:[],R3:[],R4:[],R5:[]}; A.forEach(function(a){ C.porRegra[a.rule].push(a); });
+  C.urgentes=A.slice().sort(function(a,b){ return b.sevN-a.sevN; }).slice(0,5);
+  // KPIs
+  var w7=V.filter(function(v){ return v.off>ref-7; });
+  var real=w7.filter(function(v){ return v.status==="Realizada"; }).length;
+  C.k={lojas:LOJAS.length, ativos:PROMS.filter(function(n){ return C.prom[n].status==="Ativo"; }).length,
+       plan7:w7.length, real7:real, pct:w7.length?Math.round(100*real/w7.length):0, alertas:A.length};
+  memo[ref]=C; return C;
+}
+function alertasDaLoja(C,loja){ return C.alertas.filter(function(a){ return a.lojas.indexOf(loja)>=0 && (a.rule!=="R1" || true); }); }
+function alertasDoPromotor(C,nome){ return C.alertas.filter(function(a){ return a.prom===nome; }); }
+
+/* ---------- estado ---------- */
+var TODAY=0;
+var REF=0;
+var view={t:"home"};
+var $=function(id){ return document.getElementById(id); };
+var elView=$("view"), elQ=$("q"), elSug=$("sug"), elClear=$("qclear");
+
+function go(t,id){ var hash = t==="home" ? "" : "#"+t+"/"+encodeURIComponent(id);
+  view={t:t,id:id}; render(); window.scrollTo(0,0);
+  try{ if(history.replaceState||history.pushState){ history.pushState(null,"",location.pathname+location.search+hash); } else { location.hash=hash; } }catch(e){ try{ location.hash=hash; }catch(x){} } }
+function readHash(){
+  var m=/^#(loja|promotor|rota|cidade)\/(.+)$/.exec(location.hash||"");
+  if(m){ var id=decodeURIComponent(m[2]); var ok=(m[1]==="loja"&&LOJA[id])||(m[1]==="promotor"&&PROMS.indexOf(id)>=0)||(m[1]==="rota"&&ROTAS.indexOf(id)>=0)||(m[1]==="cidade"&&CIDADES.indexOf(id)>=0);
+    if(ok) return {t:m[1],id:id}; }
+  return {t:"home"};
+}
+window.addEventListener("popstate",function(){ view=readHash(); render(); window.scrollTo(0,0); });
+window.addEventListener("hashchange",function(){ view=readHash(); render(); window.scrollTo(0,0); });
+
+/* ---------- peças de UI ---------- */
+function statusEl(s){
+  var ok=s==="Realizada";
+  return h("span",{class:"st "+(ok?"ok":"no")}, h("span",{class:"badge"},icon(ok?"check":"cross")), s);
+}
+function linkLoja(id){ return h("button",{type:"button",class:"link",onclick:function(){ go("loja",id); }},id); }
+function linkProm(id){ return h("button",{type:"button",class:"link",onclick:function(){ go("promotor",id); }},id); }
+function linkRota(id){ return h("button",{type:"button",class:"link",onclick:function(){ go("rota",id); }},id); }
+function openAlert(a){ if(a.kind==="promotor") go("promotor",a.target); else go("loja",a.target); }
+function alertRow(a,showChip){
+  return h("button",{type:"button",class:"alert",onclick:function(){ openAlert(a); }},
+    showChip? h("span",{class:"chip"},a.rule):null,
+    h("span",{class:"tx"}, h("span",{class:"t"},a.title), h("span",{class:"d"},a.detail)),
+    h("span",{class:"go"},icon("arrow")));
+}
+function table(head,rows,extra){
+  var t=h("table",{class:"tb"}, h("thead",null,h("tr",null,head.map(function(x){ return h("th",{scope:"col"},x); }))), h("tbody",null,rows));
+  return h("div",{class:"tw"},t);
+}
+function td(c,cls){ return h("td",cls?{class:cls}:null,c); }
+function diaSemana(o){ return DOW[dow(o)]; }
+function obsFlags(C,v){
+  var out=[], p=C.prom[v.prom], l=LOJA[v.loja];
+  if(p && p.status==="Desligado" && v.off>p.dDes && v.status==="Realizada") out.push(h("span",{class:"obs"},"Após desligamento"));
+  if(p && p.status==="Ativo" && p.rotaCat && l.rota!==p.rotaCat) out.push(h("span",{class:"obs"},"Fora da rota"));
+  return out;
+}
+function visitaRow(C,v,mode){
+  var flagged=obsFlags(C,v), dur=(v.cin!==null)?(v.cout-v.cin)+" min":"—";
+  var cells=[ td(diaSemana(v.off)+" "+fmt(v.off),"num"),
+              td(mode==="loja"?linkProm(v.prom):linkLoja(v.loja)),
+              td(statusEl(v.status)),
+              td(v.cin!==null?hm(v.cin):"—","num"), td(v.cout!==null?hm(v.cout):"—","num"), td(dur,"num"), td(flagged.length?flagged:"") ];
+  return h("tr",flagged.length?{class:"flag"}:null,cells);
+}
+
+/* ---------- visão geral ---------- */
+function renderHome(C){
+  var k=C.k, root=h("div");
+  var kp=h("div",{class:"kpis"},
+    h("div",{class:"card kpi"},h("div",{class:"k"},"Lojas no catálogo"),h("div",{class:"n",id:"k-lojas"},String(k.lojas)),h("div",{class:"s"},"em "+ROTAS.length+" rotas")),
+    h("div",{class:"card kpi"},h("div",{class:"k"},"Promotores ativos"),h("div",{class:"n",id:"k-ativos"},String(k.ativos)),h("div",{class:"s"},"de "+PROMS.length+" cadastrados")),
+    h("div",{class:"card kpi"},h("div",{class:"k"},"Visitas realizadas, últimos 7 dias"),h("div",{class:"n",id:"k-pct"},k.pct+"%"),h("div",{class:"s"},k.real7+" de "+k.plan7+" planejadas")),
+    h("div",{class:"card kpi hot"},h("div",{class:"k"},"Alertas abertos"),h("div",{class:"n",id:"k-alertas"},String(k.alertas)),h("div",{class:"s"},"em "+Object.keys(C.porRegra).filter(function(r){ return C.porRegra[r].length; }).length+" regras automáticas")));
+  root.appendChild(kp);
+  root.appendChild(h("div",{class:"sect"},h("h2",null,"Alertas por regra"),h("span",null,"Clique em um alerta para abrir a ficha")));
+  var gr=h("div",{class:"groups"});
+  ["R1","R2","R3","R4","R5"].forEach(function(r){
+    var list=C.porRegra[r];
+    gr.appendChild(h("section",{class:"card grp","data-rule":r},
+      h("header",null,h("span",{class:"chip"},r),h("b",null,REGRAS[r].nome),h("span",{class:"count"},plural(list.length,"caso","casos"))),
+      list.length? list.map(function(a){ return alertRow(a,false); }) : h("div",{class:"alert"},h("span",{class:"tx"},h("span",{class:"d"},"Nenhum caso nesta data")))));
+  });
+  gr.appendChild(h("section",{class:"card explain"},
+    h("h3",null,"O que está sendo juntado"),
+    h("ul",null,
+      h("li",null,h("b",null,"Catálogo"),h("span",null,LOJAS.length+" lojas · "+ROTAS.length+" rotas")),
+      h("li",null,h("b",null,"Movimentação"),h("span",null,MOV.length+" registros")),
+      h("li",null,h("b",null,"Visitas Retail-X"),h("span",null,VISITAS.length+" visitas · 28 dias"))),
+    h("p",null,"Antes: três arquivos conferidos à mão. Agora: ",h("strong",null,"uma página"),", com regras que procuram as divergências sozinhas.")));
+  root.appendChild(gr);
+  return root;
+}
+
+/* ---------- heatmap ---------- */
+function heatmap(C,loja){
+  var ref=C.ref, first=ref-27, byDay={};
+  C.visitas.forEach(function(v){ if(v.loja!==loja) return; var s=byDay[v.off]; if(v.status==="Realizada") byDay[v.off]="on"; else if(!s) byDay[v.off]="no"; });
+  var startMon=first-((dow(first)+6)%7), g=h("div",{class:"heat",role:"img","aria-label":"Calendário dos últimos 28 dias"});
+  g.appendChild(h("div"));
+  DOWH.forEach(function(d){ g.appendChild(h("div",{class:"hd"},d)); });
+  for(var ws=startMon; ws<=ref; ws+=7){
+    g.appendChild(h("div",{class:"wk"},fmt(ws)));
+    for(var i=0;i<7;i++){
+      var o=ws+i, c;
+      if(o<first||o>ref){ c=h("div",{class:"cell void"}); }
+      else {
+        var s=byDay[o], dn=h("span",{class:"dn"},String(dObj(o).getUTCDate()));
+        if(s==="on") c=h("div",{class:"cell on",title:fmtFull(o)+": Realizada"},dn,icon("check"));
+        else if(s==="no") c=h("div",{class:"cell no",title:fmtFull(o)+": Não realizada"},dn,icon("cross"));
+        else c=h("div",{class:"cell none",title:fmtFull(o)+": Sem visita planejada"},dn,h("span",{class:"dash"}));
+      }
+      g.appendChild(c);
+    }
+  }
+  var lg=h("div",{class:"legend"},
+    h("span",null,h("i",{class:"l-on"},icon("check")),"Realizada"),
+    h("span",null,h("i",{class:"l-no"},icon("cross")),"Não realizada"),
+    h("span",null,h("i",{class:"l-none"}),"Sem visita planejada"));
+  return h("div",null,g,lg);
+}
+
+/* ---------- ficha da loja ---------- */
+function renderLoja(C,id){
+  var l=LOJA[id], p=C.prom[l.promotor], al=alertasDaLoja(C,id);
+  var vs=C.visitas.filter(function(v){ return v.loja===id; });
+  var v28=vs.filter(function(v){ return v.off>C.ref-28; }), real=v28.filter(function(v){ return v.status==="Realizada"; }).length;
+  var u=C.ultReal[id];
+  var root=h("div");
+  
+  root.appendChild(h("div",{class:"card"},h("div",{class:"pagehead"},
+    h("div",{class:"tt"},h("div",{class:"eyebrow"},"Ficha 360 · Loja"),h("h2",null,id),
+      h("div",{class:"tags"},h("span",{class:"tag"},l.rede),h("span",{class:"tag"},l.cidade+"/"+l.uf),h("span",{class:"tag"},l.rota),
+        al.length?h("span",{class:"tag red"},icon("warn"),plural(al.length,"alerta","alertas")):h("span",{class:"tag"},icon("check"),"Sem alertas"))),backBtn())));
+  if(al.length) root.appendChild(h("div",{class:"alertbox",id:"loja-alertas"},al.map(function(a){ return alertRow2(a); })));
+  var dl=h("dl",{class:"kv"},
+    h("dt",null,"Titular"),h("dd",null,linkProm(l.promotor)," ",p.status==="Desligado"?h("span",{class:"tag red"},"Desligado em "+fmt(p.dDes)):h("span",{class:"tag-act"},p.status)),
+    h("dt",null,"Coordenador"),h("dd",null,l.coord),
+    h("dt",null,"Rota"),h("dd",null,linkRota(l.rota)),
+    h("dt",null,"Rede"),h("dd",null,l.rede),
+    h("dt",null,"Cidade"),h("dd",null,l.cidade+"/"+l.uf),
+    h("dt",null,"Visitas em 28 dias"),h("dd",null,real+" realizadas de "+v28.length+" planejadas"),
+    h("dt",null,"Última realizada"),h("dd",null,u===undefined?"—":fmtFull(u)+" (há "+plural(C.ref-u,"dia","dias")+")"));
+  root.appendChild(h("div",{class:"grid2"},
+    h("section",{class:"card"},h("h3",null,"Catálogo"),dl),
+    h("section",{class:"card"},h("h3",null,"Últimos 28 dias"),heatmap(C,id))));
+  var last=vs.slice().sort(function(a,b){ return b.off-a.off || b.cin-a.cin; }).slice(0,8);
+  root.appendChild(h("section",{class:"card",style:"margin-top:1rem"},h("h3",null,"Últimas visitas (Retail-X)"),
+    last.length?table(["Data","Promotor","Status","Check-in","Check-out","Duração","Observação"],last.map(function(v){ return visitaRow(C,v,"loja"); })):h("p",null,"Sem visitas na janela.")));
+  return root;
+}
+function alertRow2(a){
+  return h("button",{type:"button",class:"alert",onclick:function(){ if(a.kind==="promotor"||a.rule==="R1"){ go("promotor",a.prom||a.target); } else { go("promotor",a.prom||LOJA[a.target].promotor); } }},
+    h("span",{class:"chip"},a.rule),
+    h("span",{class:"tx"},h("span",{class:"t"},REGRAS[a.rule].nome),h("span",{class:"d"},(a.kind==="loja"&&a.rule==="R3"?"":a.title+" · ")+a.detail)),
+    h("span",{class:"go"},icon("arrow")));
+}
+function backBtn(){ return h("button",{type:"button",class:"btn ghost small back",id:"backbtn",onclick:function(){ go("home"); }},icon("back"),"Voltar à visão geral"); }
+
+/* ---------- ficha do promotor ---------- */
+function renderPromotor(C,nome){
+  var p=C.prom[nome], al=alertasDoPromotor(C,nome), root=h("div");
+  var diverge=!!(p.rotaCat && p.rotaMov && p.rotaCat!==p.rotaMov) || (p.status==="Desligado" && p.rotaCat);
+  
+  var stTag = p.status==="Ativo"?h("span",{class:"tag dark"},"Ativo"):p.status==="Desligado"?h("span",{class:"tag red"},icon("cross"),"Desligado em "+fmtFull(p.dDes)):h("span",{class:"tag"},"Não admitido nesta data");
+  root.appendChild(h("div",{class:"card"},h("div",{class:"pagehead"},
+    h("div",{class:"tt"},h("div",{class:"eyebrow"},"Ficha 360 · Promotor"),h("h2",null,nome),
+      h("div",{class:"tags"},stTag,p.rotaCat?h("span",{class:"tag"},"Catálogo: "+p.rotaCat):h("span",{class:"tag"},"Sem rota no catálogo"),
+        al.length?h("span",{class:"tag red"},icon("warn"),plural(al.length,"alerta","alertas")):h("span",{class:"tag"},icon("check"),"Sem alertas"))),backBtn())));
+  if(al.length) root.appendChild(h("div",{class:"alertbox",id:"prom-alertas"},al.map(function(a){ return alertRow(a,true); })));
+  // comparativo
+  var cat=p.rotaCat||"Sem rota", mv=p.status==="Desligado"?"Desligado":(p.rotaMov||"—");
+  var cmp=h("div",{class:"cmp"+(diverge?" diff":""),id:"cmp"},
+    h("div",{class:"bx"},h("small",null,"Rota pelo catálogo"),h("b",null,cat)),
+    h("div",{class:"vs"},diverge?"≠":"="),
+    h("div",{class:"bx"},h("small",null,"Rota pela movimentação"),h("b",null,mv)));
+  var verdict=h("p",{class:"verdict"+(diverge?" diff":"")},icon(diverge?"warn":"check"),
+    diverge?(p.status==="Desligado"?"Divergem: o catálogo ainda lista este promotor como titular":"Divergem: o catálogo está desatualizado"):"Conferem: catálogo e movimentação estão iguais");
+  var tl=h("ol",{class:"tl"},p.movs.slice().reverse().map(function(m){
+    var det=m.tipo==="Admissão"?"para "+m.para:m.tipo==="Desligamento"?"da "+m.de:m.de+" → "+m.para;
+    return h("li",{class:(m.tipo==="Admissão"?"":"dest")},h("div",{class:"dt"},fmtFull(m.off)),h("div",{class:"ev"},m.tipo+" ",h("span",null,det)));
+  }));
+  root.appendChild(h("div",{class:"grid2b"},
+    h("section",{class:"card"},h("h3",null,"Rota: catálogo × movimentação"),cmp,verdict,h("h3",null,"Linha do tempo da movimentação"),p.movs.length?tl:h("p",null,"Sem movimentação até esta data.")),
+    h("section",{class:"card"},h("h3",null,p.rotaCat?"Lojas da "+p.rotaCat+" (catálogo)":"Lojas"),
+      p.rotaCat?table(["Loja","Cidade","Última realizada","Alertas"],lojasDaRota(p.rotaCat).map(function(l){
+        var u=C.ultReal[l.loja], n=alertasDaLoja(C,l.loja).length;
+        return h("tr",null,td(linkLoja(l.loja)),td(l.cidade),td(u===undefined?"—":fmt(u)+" (há "+(C.ref-u)+" d)","num"),td(n?h("span",{class:"obs"},plural(n,"alerta","alertas")):"—"));
+      })):h("p",null,"Este promotor não é titular de nenhuma loja no catálogo."))));
+  var vs=C.visitas.filter(function(v){ return v.prom===nome; }).sort(function(a,b){ return b.off-a.off || b.cin-a.cin; }).slice(0,8);
+  root.appendChild(h("section",{class:"card",style:"margin-top:1rem"},h("h3",null,"Visitas recentes (Retail-X)"),
+    vs.length?table(["Data","Loja","Status","Check-in","Check-out","Duração","Observação"],vs.map(function(v){ return visitaRow(C,v,"prom"); })):h("p",null,"Sem visitas nos últimos 28 dias.")));
+  return root;
+}
+
+/* ---------- lista (rota ou cidade) ---------- */
+function renderLista(C,t,id){
+  var ls=t==="rota"?lojasDaRota(id):LOJAS.filter(function(l){ return l.cidade===id; });
+  var root=h("div"); 
+  var coords=[], tit=[]; ls.forEach(function(l){ if(coords.indexOf(l.coord)<0) coords.push(l.coord); if(tit.indexOf(l.promotor)<0) tit.push(l.promotor); });
+  root.appendChild(h("div",{class:"card"},h("div",{class:"pagehead"},h("div",{class:"tt"},h("div",{class:"eyebrow"},t==="rota"?"Rota":"Cidade"),h("h2",null,id),
+    h("div",{class:"tags"},h("span",{class:"tag"},plural(ls.length,"loja","lojas")),h("span",{class:"tag"},coords.join(", ")),h("span",{class:"tag"},tit.length===1?"Titular: "+tit[0]:plural(tit.length,"titular","titulares")))),backBtn())));
+  root.appendChild(h("section",{class:"card",style:"margin-top:1rem"},table(["Loja","Rede","Cidade","Rota","Titular","Última realizada","Alertas"],ls.map(function(l){
+    var u=C.ultReal[l.loja], n=alertasDaLoja(C,l.loja).length;
+    return h("tr",n?{class:"flag"}:null,td(linkLoja(l.loja)),td(l.rede),td(l.cidade+"/"+l.uf),td(l.rota),td(linkProm(l.promotor)),td(u===undefined?"—":fmt(u)+" (há "+(C.ref-u)+" d)","num"),td(n?h("span",{class:"obs"},plural(n,"alerta","alertas")):"—"));
+  }))));
+  return root;
+}
+
+function render(){
+  var C=calc(REF); elView.textContent="";
+  var node;
+  if(view.t==="loja") node=renderLoja(C,view.id);
+  else if(view.t==="promotor") node=renderPromotor(C,view.id);
+  else if(view.t==="rota"||view.t==="cidade") node=renderLista(C,view.t,view.id);
+  else node=renderHome(C);
+  elView.appendChild(node);
+}
+
+/* ---------- busca ---------- */
+var INDEX=[];
+ROTAS.forEach(function(r){ var ls=lojasDaRota(r); INDEX.push({kind:"Rota",id:r,label:r,sub:ls[0].cidade+" · "+ls[0].coord+" · 4 lojas",n:norm(r),ns:norm(ls[0].cidade+" "+ls[0].coord),o:0}); });
+PROMS.forEach(function(n){ INDEX.push({kind:"Promotor",id:n,label:n,sub:"",n:norm(n),ns:"",o:1}); });
+LOJAS.forEach(function(l){ INDEX.push({kind:"Loja",id:l.loja,label:l.loja,sub:l.cidade+"/"+l.uf+" · "+l.rota+" · "+l.rede,n:norm(l.loja),ns:norm(l.cidade+" "+l.rota+" "+l.promotor+" "+l.rede),o:2}); });
+CIDADES.forEach(function(c){ var n=LOJAS.filter(function(l){ return l.cidade===c; }).length; INDEX.push({kind:"Cidade",id:c,label:c,sub:plural(n,"loja","lojas"),n:norm(c),ns:"",o:3}); });
+var sugItems=[], sugSel=-1;
+function buscar(q){
+  var nq=norm(q.trim()); if(!nq) return [];
+  var toks=nq.split(/\s+/), out=[];
+  INDEX.forEach(function(it){
+    var hay=it.n+" "+it.ns, ok=toks.every(function(t){ return hay.indexOf(t)>=0; }); if(!ok) return;
+    var sc = it.n===nq?0 : it.n.indexOf(nq)===0?1 : it.n.indexOf(nq)>0?2 : 3;
+    out.push({it:it,sc:sc});
+  });
+  out.sort(function(a,b){ return a.sc-b.sc || a.it.o-b.it.o || (a.it.label<b.it.label?-1:1); });
+  return out.slice(0,8).map(function(x){ return x.it; });
+}
+function paintSug(){
+  elSug.textContent="";
+  if(!elQ.value.trim()){ elSug.hidden=true; elQ.setAttribute("aria-expanded","false"); elQ.removeAttribute("aria-activedescendant"); return; }
+  if(!sugItems.length){ elSug.appendChild(h("li",{class:"none",role:"option","aria-disabled":"true"},"Nada encontrado para “"+elQ.value.trim()+"”")); }
+  sugItems.forEach(function(it,i){
+    var li=h("li",{role:"option",id:"sug-"+i,"aria-selected":i===sugSel?"true":"false"},
+      h("span",{class:"kind"},it.kind),h("span",{class:"lbl"},it.label),it.sub?h("span",{class:"sub"},it.sub):null);
+    li.addEventListener("mousedown",function(e){ e.preventDefault(); pick(it); });
+    li.addEventListener("mousemove",function(){ if(sugSel!==i){ sugSel=i; markSel(); } });
+    elSug.appendChild(li);
+  });
+  elSug.hidden=false; elQ.setAttribute("aria-expanded","true");
+  if(sugSel>=0) elQ.setAttribute("aria-activedescendant","sug-"+sugSel); else elQ.removeAttribute("aria-activedescendant");
+}
+function markSel(){ Array.prototype.forEach.call(elSug.children,function(li,i){ li.setAttribute("aria-selected",i===sugSel?"true":"false"); }); if(sugSel>=0) elQ.setAttribute("aria-activedescendant","sug-"+sugSel); }
+function pick(it){
+  elQ.value=""; sugItems=[]; sugSel=-1; paintSug(); elClear.classList.remove("on");
+  go(it.kind.toLowerCase(),it.id);
+}
+function limpar(){ elQ.value=""; sugItems=[]; sugSel=-1; paintSug(); elClear.classList.remove("on"); }
+elQ.addEventListener("input",function(){ sugItems=buscar(elQ.value); sugSel=sugItems.length?0:-1; elClear.classList.toggle("on",!!elQ.value); paintSug(); });
+elQ.addEventListener("keydown",function(e){
+  if(e.key==="ArrowDown"){ e.preventDefault(); if(sugItems.length){ sugSel=(sugSel+1)%sugItems.length; markSel(); } }
+  else if(e.key==="ArrowUp"){ e.preventDefault(); if(sugItems.length){ sugSel=(sugSel-1+sugItems.length)%sugItems.length; markSel(); } }
+  else if(e.key==="Enter"){ e.preventDefault(); if(sugItems.length) pick(sugItems[sugSel>=0?sugSel:0]); }
+  else if(e.key==="Escape"){ e.preventDefault(); limpar(); }
+});
+elQ.addEventListener("blur",function(){ setTimeout(function(){ elSug.hidden=true; elQ.setAttribute("aria-expanded","false"); },120); });
+elQ.addEventListener("focus",function(){ if(elQ.value.trim()&&sugItems.length) paintSug(); });
+elClear.appendChild(icon("cross")); elClear.addEventListener("click",function(){ limpar(); elQ.focus(); });
+$("mailbtn").appendChild(icon("mail")); $("mailbtn").appendChild(document.createTextNode("Gerar resumo para e-mail"));
+
+(function(){ var full=elQ.getAttribute("placeholder"), mq=window.matchMedia?window.matchMedia("(max-width:640px)"):null;
+  function ph(){ elQ.setAttribute("placeholder", mq&&mq.matches ? "Loja, promotor, rota ou cidade" : full); } ph();
+  if(mq){ if(mq.addEventListener) mq.addEventListener("change",ph); else if(mq.addListener) mq.addListener(ph); } })();
+/* ---------- resumo para e-mail ---------- */
+function mailHtml(C){
+  var F="font-family:Arial,Helvetica,sans-serif;", TD="padding:8px 10px;border-bottom:1px solid #dedcdd;"+F+"font-size:14px;color:#333333;";
+  var TH="padding:8px 10px;background:#ebeaeb;"+F+"font-size:12px;color:#4a4a4a;text-align:left;text-transform:uppercase;";
+  var k=C.k, s="";
+  s+='<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:640px;border-collapse:collapse;'+F+'">';
+  s+='<tr><td style="background:#e3001b;color:#ffffff;padding:14px 16px;'+F+'font-size:20px;font-weight:bold;">Resumo do dia: Busca 360</td></tr>';
+  s+='<tr><td style="padding:12px 16px 4px;'+F+'font-size:14px;color:#4a4a4a;">Data de referência: <b>'+esc(fmtFull(C.ref))+'</b> &middot; '+esc(String(k.alertas))+' alertas abertos &middot; '+esc(String(k.pct))+'% das visitas planejadas realizadas nos últimos 7 dias ('+esc(String(k.real7))+' de '+esc(String(k.plan7))+') &middot; '+esc(String(k.ativos))+' promotores ativos.</td></tr>';
+  s+='<tr><td style="padding:12px 16px 0;'+F+'font-size:16px;font-weight:bold;color:#333333;">Alertas por regra</td></tr>';
+  s+='<tr><td style="padding:6px 16px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;"><tr><th style="'+TH+'">Regra</th><th style="'+TH+'">Descrição</th><th style="'+TH+'text-align:right;">Casos</th></tr>';
+  ["R1","R2","R3","R4","R5"].forEach(function(r){ var n=C.porRegra[r].length;
+    s+='<tr><td style="'+TD+'font-weight:bold;color:#e3001b;">'+r+'</td><td style="'+TD+'">'+esc(REGRAS[r].nome)+'</td><td style="'+TD+'text-align:right;font-weight:bold;">'+n+'</td></tr>'; });
+  s+='</table></td></tr>';
+  s+='<tr><td style="padding:16px 16px 0;'+F+'font-size:16px;font-weight:bold;color:#333333;">5 itens mais urgentes</td></tr>';
+  s+='<tr><td style="padding:6px 16px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;"><tr><th style="'+TH+'">#</th><th style="'+TH+'">Regra</th><th style="'+TH+'">Item</th><th style="'+TH+'">O que aconteceu</th></tr>';
+  C.urgentes.forEach(function(a,i){
+    s+='<tr><td style="'+TD+'">'+(i+1)+'</td><td style="'+TD+'font-weight:bold;color:#e3001b;">'+a.rule+'</td><td style="'+TD+'font-weight:bold;">'+esc(a.title)+'</td><td style="'+TD+'">'+esc(a.detail)+'</td></tr>'; });
+  if(!C.urgentes.length) s+='<tr><td colspan="4" style="'+TD+'">Nenhum alerta aberto nesta data.</td></tr>';
+  s+='</table></td></tr>';
+  s+='<tr><td style="padding:14px 16px;'+F+'font-size:12px;color:#6e6e6e;">Protótipo com dados fictícios. Regras R1–R5 aplicadas automaticamente sobre Catálogo, Movimentação e Visitas (Retail-X).</td></tr>';
+  s+='</table>';
+  return s;
+}
+function mailText(C){
+  var t="Resumo do dia - Busca 360 ("+fmtFull(C.ref)+")\n"+C.k.alertas+" alertas abertos\n\n";
+  ["R1","R2","R3","R4","R5"].forEach(function(r){ t+=r+" "+REGRAS[r].nome+": "+C.porRegra[r].length+"\n"; });
+  t+="\n5 itens mais urgentes:\n"; C.urgentes.forEach(function(a,i){ t+=(i+1)+". "+a.rule+" - "+a.title+": "+a.detail+"\n"; });
+  return t;
+}
+var dlg=$("dlg"), prev=$("mailprev"), copied=$("copied");
+$("copybtn").appendChild(icon("copy")); $("copybtn").appendChild(document.createTextNode("Copiar"));
+function abrirResumo(){
+  var C=calc(REF); prev.innerHTML=mailHtml(C); copied.textContent="";
+  try{ if(dlg.showModal) dlg.showModal(); else dlg.setAttribute("open",""); }catch(e){ dlg.setAttribute("open",""); }
+}
+function copiar(){
+  var C=calc(REF), html=mailHtml(C), txt=mailText(C);
+  function fallback(){
+    try{
+      var r=document.createRange(); r.selectNodeContents(prev); var sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      var ok=false; try{ ok=document.execCommand("copy"); }catch(e){}
+      if(ok){ sel.removeAllRanges(); copied.textContent="Copiado. Cole no corpo do e-mail."; } else copied.textContent="Texto selecionado. Pressione Ctrl+C para copiar.";
+    }catch(e){ copied.textContent="Selecione o resumo acima e copie com Ctrl+C."; }
+  }
+  try{
+    if(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem){
+      navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([txt],{type:"text/plain"})})])
+        .then(function(){ copied.textContent="Copiado. Cole no corpo do e-mail."; }, fallback);
+    } else if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){ copied.textContent="Copiado (texto simples)."; }, fallback);
+    } else fallback();
+  }catch(e){ fallback(); }
+}
+$("mailbtn").addEventListener("click",abrirResumo);
+$("copybtn").addEventListener("click",copiar);
+$("closebtn").addEventListener("click",function(){ try{ dlg.close(); }catch(e){ dlg.removeAttribute("open"); } });
+dlg.addEventListener("click",function(e){ if(e.target===dlg){ try{ dlg.close(); }catch(x){ dlg.removeAttribute("open"); } } });
+
+/* ---------- data de referência ---------- */
+document.documentElement.lang="pt-BR";
+var elRef=$("ref"), elHoje=$("hoje");
+elRef.min=iso(-20); elRef.max=iso(TODAY); elRef.value=iso(REF);
+function setRef(o){
+  if(o===null) return; o=Math.max(-20,Math.min(TODAY,o)); REF=o; elRef.value=iso(REF); elHoje.hidden=(REF===TODAY); render();
+}
+elRef.addEventListener("change",function(){ setRef(isoToOff(elRef.value)); });
+elHoje.addEventListener("click",function(){ setRef(TODAY); });
+
+/* exposição para teste/depuração */
+window.__busca360={calc:calc,setRef:setRef,get ref(){return REF;},visitas:VISITAS};
+view=readHash(); render();
+})();
+</script>
+
+</body>
+</html>
